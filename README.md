@@ -5,7 +5,7 @@ The tool relies on numpy and matplotlib and should work with recently fair versi
 
 To run the code:
 ```
-python main.py --configfile "$PATH_TO_CONFIG_FILE" --tool="$TOOL_NAME" --labelled_data_file "$PATH_TO_LABELLED_DATA_FILE" --unlabelled_data_file "$PATH_TO_UNBALELLED_DATA_FILE" --outdir="out"
+python main.py --configfile "$PATH_TO_CONFIG_FILE" --tool="$TOOL_NAME" --labelled_data_file "$PATH_TO_LABELLED_DATA_FILE" --unlabelled_data_file "$PATH_TO_UNBALELLED_DATA_FILE" --outdir=<$PATH_TO_RESULT_DIR>
 ```
 The results are stored in "out" sub directory.
 
@@ -32,8 +32,27 @@ windowgnomadfraction = 0.03  # For the adaptive	windows for computing the local 
 ```
 
 
+## RESULTS
 
-An example use of invoking Local Calibration Method. Refer examples/example2.py for the whole code
+In the provided output directory, you will have following files:
+1. $TOOL_NAME_benign.txt   - This is a two column file. The first column represents a score from the tool and second column represents the calibrated probability of being benign.
+2. $TOOL_NAME_pathogenic.txt - This is a two column file.   The first column represents a score from the tool and second column represents the calibrated probability of being pathogenic.
+3. $TOOL_NAME_bthresh.txt - This is a five column file. It gives a score threshold for five levels of evidence strength for benignity. Each row corresponds to a bootstrap iteration. (excpet first row which includes whole data)
+4. $TOOL_NAME_pthresh.txt - This is a five column file.	It gives a score threshold for five levels of evidence strength	for pathogenicity. Each row corresponds to a bootstrap iteration. (excpet first row	which includes whole data)
+5. $TOOL_NAME_bthreshdiscounted.txt - This reports 95 percentile score for each evidence strength for benignity computed from all bootstrap iteration
+6. $TOOL_NAME_pthreshdiscounted.txt- This reports 95 percentile score for each evidence strength for pathogenicity computed	from all bootstrap iteration
+7. $TOOL_NAME_benign.png - This is a score-probability graph for benignity.
+8. $TOOL_NAME_pathogenic.png - This  is a score-probability graph for pathogenicity.
+
+
+
+
+## Additiona Comments
+
+In case you wish to use our implementation of  Local Calibration method in your own tool, refer to following hints:
+
+
+1. An example use of invoking Local Calibration Method. Refer examples/example2.py for the whole code
 
 
 ```python
@@ -43,7 +62,7 @@ An example use of invoking Local Calibration Method. Refer examples/example2.py 
 ```
 
 
-An example of using Local Calibration Method to compute BootStrapped Discounted Thresholds. Refer examples/example3.py for the whole code
+2. An example of using Local Calibration Method to compute BootStrapped Discounted Thresholds. Refer examples/example3.py for the whole code
 
 
 ```python
@@ -67,7 +86,8 @@ An example of using Local Calibration Method to compute BootStrapped Discounted 
 You can run the example as modules:
 
 ```
-python -m examples.example1 --configfile "$PATH_TO_CONFIG_FILE" --tool="$TOOL_NAME" --labelled_data_file "$PATH_TO_LABELLED_DATA_FILE" --unlabelled_data_file "$PATH_TO_UNBALELLED_DATA_FILE" --outdir="out"
-python -m examples.example2 --configfile "$PATH_TO_CONFIG_FILE" --tool="$TOOL_NAME" --labelled_data_file "$PATH_TO_LABELLED_DATA_FILE" --unlabelled_data_file "$PATH_TO_UNBALELLED_DATA_FILE" --outdir="out"
-python -m examples.example3 --configfile "$PATH_TO_CONFIG_FILE" --tool="$TOOL_NAME" --labelled_data_file "$PATH_TO_LABELLED_DATA_FILE" --unlabelled_data_file "$PATH_TO_UNBALELLED_DATA_FILE" --outdir="out"
+python -m examples.example1 --configfile "$PATH_TO_CONFIG_FILE" --tool="$TOOL_NAME" --labelled_data_file "$PATH_TO_LABELLED_DATA_FILE" --unlabelled_data_file "$PATH_TO_UNBALELLED_DATA_FILE" --outdir=<$PATH_TO_RESULT_DIR>
+python -m examples.example2 --configfile "$PATH_TO_CONFIG_FILE" --tool="$TOOL_NAME" --labelled_data_file "$PATH_TO_LABELLED_DATA_FILE" --unlabelled_data_file "$PATH_TO_UNBALELLED_DATA_FILE" --outdir=<$PATH_TO_RESULT_DIR>
+python -m examples.example3 --configfile "$PATH_TO_CONFIG_FILE" --tool="$TOOL_NAME" --labelled_data_file "$PATH_TO_LABELLED_DATA_FILE" --unlabelled_data_file "$PATH_TO_UNBALELLED_DATA_FILE" --outdir=<$PATH_TO_RESULT_DIR>
 ```
+
