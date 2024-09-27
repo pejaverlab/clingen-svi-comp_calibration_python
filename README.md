@@ -5,7 +5,7 @@ The tool relies on numpy and matplotlib and should work with recently fair versi
 
 To run the code:
 ```
-python main.py --configfile "$PATH_TO_CONFIG_FILE" --tool="$TOOL_NAME" --labelled_data_file "$PATH_TO_LABELLED_DATA_FILE" --unlabelled_data_file "$PATH_TO_UNBALELLED_DATA_FILE" --outdir=<$PATH_TO_RESULT_DIR>
+python main.py --configfile config.ini --tool="$TOOL_NAME" --labelled_data_file "$PATH_TO_LABELLED_DATA_FILE" --unlabelled_data_file "$PATH_TO_UNBALELLED_DATA_FILE" --outdir=<$PATH_TO_RESULT_DIR>
 ```
 The results are stored in "out" sub directory.
 
@@ -86,8 +86,8 @@ In case you wish to use our implementation of  Local Calibration method in your 
 You can run the example as modules:
 
 ```
-python -m examples.example1 --configfile "$PATH_TO_CONFIG_FILE" --tool="$TOOL_NAME" --labelled_data_file "$PATH_TO_LABELLED_DATA_FILE" --unlabelled_data_file "$PATH_TO_UNBALELLED_DATA_FILE" --outdir=<$PATH_TO_RESULT_DIR>
-python -m examples.example2 --configfile "$PATH_TO_CONFIG_FILE" --tool="$TOOL_NAME" --labelled_data_file "$PATH_TO_LABELLED_DATA_FILE" --unlabelled_data_file "$PATH_TO_UNBALELLED_DATA_FILE" --outdir=<$PATH_TO_RESULT_DIR>
-python -m examples.example3 --configfile "$PATH_TO_CONFIG_FILE" --tool="$TOOL_NAME" --labelled_data_file "$PATH_TO_LABELLED_DATA_FILE" --unlabelled_data_file "$PATH_TO_UNBALELLED_DATA_FILE" --outdir=<$PATH_TO_RESULT_DIR>
+python -m examples.example1 --configfile config.ini --tool="$TOOL_NAME" --labelled_data_file "$PATH_TO_LABELLED_DATA_FILE" --unlabelled_data_file "$PATH_TO_UNBALELLED_DATA_FILE" --outdir=<$PATH_TO_RESULT_DIR>
+python -m examples.example2 --configfile config.ini --tool="$TOOL_NAME" --labelled_data_file "$PATH_TO_LABELLED_DATA_FILE" --unlabelled_data_file "$PATH_TO_UNBALELLED_DATA_FILE" --outdir=<$PATH_TO_RESULT_DIR>
+python -m examples.example3 --configfile config.ini --tool="$TOOL_NAME" --labelled_data_file "$PATH_TO_LABELLED_DATA_FILE" --unlabelled_data_file "$PATH_TO_UNBALELLED_DATA_FILE" --outdir=<$PATH_TO_RESULT_DIR>
 ```
 
