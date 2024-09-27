@@ -47,7 +47,7 @@ In the provided output directory, you will have following files:
 
 
 
-## Additiona Comments
+## Additional Comments
 
 In case you wish to use our implementation of  Local Calibration method in your own tool, refer to following hints:
 
