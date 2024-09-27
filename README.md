@@ -1,11 +1,14 @@
 This is a python version of [clingen-svi-comp_calibration](https://github.com/vpejaver/clingen-svi-comp_calibration)
 
+We have tested this tool with python 3.6 and python 3.8.
+The tool relies on numpy and matplotlib and should work with recently fair version of these libraries.
 
 To run the code:
 ```
 python main.py --configfile "$PATH_TO_CONFIG_FILE" --tool="$TOOL_NAME" --labelled_data_file "$PATH_TO_LABELLED_DATA_FILE" --unlabelled_data_file "$PATH_TO_UNBALELLED_DATA_FILE" --outdir="out"
 ```
-The results are stored in "out" directory.
+The results are stored in "out" sub directory.
+
 
 
 Description of Tuning Parameters defined in config.ini are as follows:
@@ -23,7 +26,7 @@ alpha = 0.0441              # define alpha by yourself and compute 'c' as per Ta
 
 [smoothing] 
 gaussian_smoothing = False   # Apply Gaussian Smoothing on result
-unlabelled_data = True       # Set True of Unbalelled Data is available and to be used for smoothing
+data_smoothing = True       # Set True of Unbalelled Data is available and to be used for smoothing
 windowgnomadfraction = 0.03  # For the adaptive	windows for computing the local  probabilty, this defines the minimum fraction of 'unlabelled data points' that should be in the window
 
 ```
@@ -59,4 +62,12 @@ An example of using Local Calibration Method to compute BootStrapped Discounted 
     DiscountedThresholdB = LocalCalibrateThresholdComputation.get_discounted_thresholds(bthresh, Post_b, B, discountonesided, 'benign')
 
 
+```
+
+You can run the example as modules:
+
+```
+python -m examples.example1 --configfile "$PATH_TO_CONFIG_FILE" --tool="$TOOL_NAME" --labelled_data_file "$PATH_TO_LABELLED_DATA_FILE" --unlabelled_data_file "$PATH_TO_UNBALELLED_DATA_FILE" --outdir="out"
+python -m examples.example2 --configfile "$PATH_TO_CONFIG_FILE" --tool="$TOOL_NAME" --labelled_data_file "$PATH_TO_LABELLED_DATA_FILE" --unlabelled_data_file "$PATH_TO_UNBALELLED_DATA_FILE" --outdir="out"
+python -m examples.example3 --configfile "$PATH_TO_CONFIG_FILE" --tool="$TOOL_NAME" --labelled_data_file "$PATH_TO_LABELLED_DATA_FILE" --unlabelled_data_file "$PATH_TO_UNBALELLED_DATA_FILE" --outdir="out"
 ```
