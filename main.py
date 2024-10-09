@@ -74,7 +74,7 @@ def getParser():
 
     return parser
 
-def storeResults(outdir, tool, thresholds, posteriors_p, posteriors_b, pthresh, bthresh, DiscountedThresholdP, DiscountedThresholdB):
+def storeResults(outdir, tool, thresholds, posteriors_p, posteriors_b, pthresh, bthresh, DiscountedThresholdP, DiscountedThresholdB, Post_p, Post_b):
 
     fname = os.path.join(outdir,tool + "-pathogenic.txt")
     tosave = np.array([thresholds,posteriors_p]).T
@@ -89,11 +89,11 @@ def storeResults(outdir, tool, thresholds, posteriors_p, posteriors_b, pthresh, 
     ax.set_xlabel("score")
     ax.set_ylabel("posterior")
     ax.set_title(tool)
-    ax.axhline(0.9812, linestyle='dotted', color='steelblue', label = "BP4_Supporting : 0.9812")
-    ax.axhline(0.9921, linestyle='dashed', color='steelblue', label = "BP4_Moderate : 0.9921")
-    ax.axhline(0.9966997, linestyle='dashdot', color='steelblue', label = "BP4_Moderate+ : 0.996")
-    ax.axhline(0.9986, linestyle=(5, (10, 3)), color='steelblue', label = "BP4_Strong : 0.9986")
-    ax.axhline(1.0000, linestyle='solid', color='steelblue', label = "BP4_VeryStrong: 1.0000") 
+    ax.axhline(Post_b[4], linestyle='dotted', color='steelblue', label = "BP4_Supporting : " + str(round(Post_b[4],4)) )
+    ax.axhline(Post_b[3], linestyle='dashed', color='steelblue', label = "BP4_Moderate : " + str(round(Post_b[3],4)) )
+    ax.axhline(Post_b[2], linestyle='dashdot', color='steelblue', label = "BP4_Moderate+ : " + str(round(Post_b[2],4)) )
+    ax.axhline(Post_b[1], linestyle=(5, (10, 3)), color='steelblue', label = "BP4_Strong : " + str(round(Post_b[1],4)) )
+    ax.axhline(Post_b[0], linestyle='solid', color='steelblue', label = "BP4_VeryStrong: " + str(round(Post_b[0],4)) ) 
     ax.set_ylim([0.975, 1.001])
     plt.legend()
     plt.savefig(os.path.join(outdir,tool+"-benign.png"))
@@ -103,11 +103,11 @@ def storeResults(outdir, tool, thresholds, posteriors_p, posteriors_b, pthresh, 
     ax.set_xlabel("score")
     ax.set_ylabel("posterior")
     ax.set_title(tool)
-    ax.axhline(0.0999, linestyle='dotted', color='r' ,label = "PP3_Supporting : 0.0999")
-    ax.axhline(0.2108, linestyle='dashed', color='r', label = "PP3_Moderate : 0.2108")
-    ax.axhline(0.3912, linestyle='dashdot', color='r', label = "Moderate+ : 0.3912")
-    ax.axhline(0.6073, linestyle=(5, (10, 3)), color='r', label = "PP3_Strong : 0.6073")
-    ax.axhline(0.9811, linestyle='solid', color='r', label = "PP3_VeryStrong : 0.9811")
+    ax.axhline(Post_p[4], linestyle='dotted', color='r' ,label = "PP3_Supporting : " + str(round(Post_p[4],4)))
+    ax.axhline(Post_p[3], linestyle='dashed', color='r', label = "PP3_Moderate : " + str(round(Post_p[3],4)))
+    ax.axhline(Post_p[2], linestyle='dashdot', color='r', label = "Moderate+ : " + str(round(Post_p[2],4)))
+    ax.axhline(Post_p[1], linestyle=(5, (10, 3)), color='r', label = "PP3_Strong : " + str(round(Post_p[1],4)))
+    ax.axhline(Post_p[0], linestyle='solid', color='r', label = "PP3_VeryStrong : " + str(round(Post_p[0],4)))
     plt.legend()
     plt.savefig(os.path.join(outdir, tool+"-pathogenic.png"))
 
@@ -189,6 +189,10 @@ def main():
 
     Post_p, Post_b = get_tavtigian_thresholds(c, alpha)
 
+    print("Post P and B")
+    print(Post_p)
+    print(Post_b)
+
     all_pathogenic = np.row_stack((posteriors_p, posteriors_p_bootstrap))
     all_benign = 1 - np.flip(all_pathogenic, axis = 1)
 
@@ -198,7 +202,7 @@ def main():
     DiscountedThresholdP = LocalCalibrateThresholdComputation.get_discounted_thresholds(pthresh, Post_p, B, discountonesided, 'pathogenic')
     DiscountedThresholdB = LocalCalibrateThresholdComputation.get_discounted_thresholds(bthresh, Post_b, B, discountonesided, 'benign')
 
-    storeResults(outdir, tool, thresholds, posteriors_p, posteriors_b, pthresh, bthresh, DiscountedThresholdP, DiscountedThresholdB)
+    storeResults(outdir, tool, thresholds, posteriors_p, posteriors_b, pthresh, bthresh, DiscountedThresholdP, DiscountedThresholdB, Post_p, Post_b)
     
     print("Thresholds: ", pthresh)
     print("Discounted Thresholds: ", DiscountedThresholdP)
