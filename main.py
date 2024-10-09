@@ -86,18 +86,29 @@ def storeResults(outdir, tool, thresholds, posteriors_p, posteriors_b, pthresh, 
     import matplotlib.pyplot as plt
     fig, ax = plt.subplots()
     ax.plot(np.flip(thresholds),posteriors_b , linewidth=2.0)
-    #ax.hlines(bthresh[0],thresholds[-1], thresholds[0], color='r', linestyle='dashed')
     ax.set_xlabel("score")
     ax.set_ylabel("posterior")
     ax.set_title(tool)
+    ax.axhline(0.9812, linestyle='dotted', color='steelblue', label = "BP4_Supporting")
+    ax.axhline(0.9921, linestyle='dashed', color='steelblue', label = "BP4_Moderate")
+    ax.axhline(0.9966997, linestyle='dashdot', color='steelblue', label = "BP4_Moderate+")
+    ax.axhline(0.9986, linestyle=(5, (10, 3)), color='steelblue', label = "BP4_Strong")
+    ax.axhline(1.0000, linestyle='solid', color='steelblue', label = "BP4_VeryStrong") 
+    ax.set_ylim([0.975, 1.001])
+    plt.legend()
     plt.savefig(os.path.join(outdir,tool+"-benign.png"))
     ax.clear()
+
     ax.plot(thresholds,posteriors_p , linewidth=2.0, color='b')
-    #ax.plot(thresholds,posteriors_p_smooth , linewidth=2.0, color='r')
-    #ax.hlines(pthresh[0],thresholds[-1], thresholds[0], color='r', linestyle='dashed')
     ax.set_xlabel("score")
     ax.set_ylabel("posterior")
     ax.set_title(tool)
+    ax.axhline(0.0999, linestyle='dotted', color='r' ,label = "PP3_Supporting")
+    ax.axhline(0.2108, linestyle='dashed', color='r', label = "PP3_Moderate")
+    ax.axhline(0.3912, linestyle='dashdot', color='r', label = "Moderate+")
+    ax.axhline(0.6073, linestyle=(5, (10, 3)), color='r', label = "PP3_Strong")
+    ax.axhline(0.9811, linestyle='solid', color='r', label = "PP3_VeryStrong")
+    plt.legend()
     plt.savefig(os.path.join(outdir, tool+"-pathogenic.png"))
 
     fname = os.path.join(outdir,tool + "-pthresh.txt")
@@ -110,6 +121,8 @@ def storeResults(outdir, tool, thresholds, posteriors_p, posteriors_b, pthresh, 
     fname = os.path.join(outdir,tool + "-bthreshdiscounted.txt")
     np.savetxt(fname, DiscountedThresholdB , delimiter='\t', fmt='%f')
 
+
+    
 
 def main():
 
