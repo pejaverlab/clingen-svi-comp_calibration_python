@@ -74,7 +74,7 @@ def getParser():
 
     return parser
 
-def storeResults(outdir, tool, thresholds, posteriors_p, posteriors_b, pthresh, bthresh, DiscountedThresholdP, DiscountedThresholdB, Post_p, Post_b):
+def storeResults(outdir, tool, thresholds, posteriors_p, posteriors_b, all_pathogenic, all_benign, pthresh, bthresh, DiscountedThresholdP, DiscountedThresholdB, Post_p, Post_b):
 
     fname = os.path.join(outdir,tool + "-pathogenic.txt")
     tosave = np.array([thresholds,posteriors_p]).T
@@ -86,6 +86,8 @@ def storeResults(outdir, tool, thresholds, posteriors_p, posteriors_b, pthresh, 
     import matplotlib.pyplot as plt
     fig, ax = plt.subplots()
     ax.plot(np.flip(thresholds),posteriors_b , linewidth=2.0)
+    benign95= [np.percentile(e,5) for e in all_benign]
+    ax.plot(np.flip(thresholds),benign95, color='gray', label = "One-sided confidence bound")
     ax.set_xlabel("score")
     ax.set_ylabel("posterior")
     ax.set_title(tool)
@@ -95,11 +97,13 @@ def storeResults(outdir, tool, thresholds, posteriors_p, posteriors_b, pthresh, 
     ax.axhline(Post_b[1], linestyle=(5, (10, 3)), color='steelblue', label = "BP4_Strong : " + str(round(Post_b[1],4)) )
     ax.axhline(Post_b[0], linestyle='solid', color='steelblue', label = "BP4_VeryStrong: " + str(round(Post_b[0],4)) ) 
     ax.set_ylim([0.975, 1.001])
-    plt.legend()
+    plt.legend(loc="lower left", fontsize="xx-small")
     plt.savefig(os.path.join(outdir,tool+"-benign.png"))
     ax.clear()
 
     ax.plot(thresholds,posteriors_p , linewidth=2.0, color='b')
+    pathogenic95 = [np.percentile(e,5) for e in all_pathogenic]
+    ax.plot(thresholds,pathogenic95, color='gray', label = "One-sided confidence bound")
     ax.set_xlabel("score")
     ax.set_ylabel("posterior")
     ax.set_title(tool)
@@ -108,7 +112,7 @@ def storeResults(outdir, tool, thresholds, posteriors_p, posteriors_b, pthresh, 
     ax.axhline(Post_p[2], linestyle='dashdot', color='r', label = "Moderate+ : " + str(round(Post_p[2],4)))
     ax.axhline(Post_p[1], linestyle=(5, (10, 3)), color='r', label = "PP3_Strong : " + str(round(Post_p[1],4)))
     ax.axhline(Post_p[0], linestyle='solid', color='r', label = "PP3_VeryStrong : " + str(round(Post_p[0],4)))
-    plt.legend()
+    plt.legend(loc="upper left", fontsize="xx-small")
     plt.savefig(os.path.join(outdir, tool+"-pathogenic.png"))
 
     fname = os.path.join(outdir,tool + "-pthresh.txt")
@@ -202,7 +206,7 @@ def main():
     DiscountedThresholdP = LocalCalibrateThresholdComputation.get_discounted_thresholds(pthresh, Post_p, B, discountonesided, 'pathogenic')
     DiscountedThresholdB = LocalCalibrateThresholdComputation.get_discounted_thresholds(bthresh, Post_b, B, discountonesided, 'benign')
 
-    storeResults(outdir, tool, thresholds, posteriors_p, posteriors_b, pthresh, bthresh, DiscountedThresholdP, DiscountedThresholdB, Post_p, Post_b)
+    storeResults(outdir, tool, thresholds, posteriors_p, posteriors_b, all_pathogenic[1:].T, all_benign[1:].T, pthresh, bthresh, DiscountedThresholdP, DiscountedThresholdB, Post_p, Post_b)
     
     print("Thresholds: ", pthresh)
     print("Discounted Thresholds: ", DiscountedThresholdP)
