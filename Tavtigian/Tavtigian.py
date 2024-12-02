@@ -5,7 +5,7 @@ import numpy as np
 import math
 import time
 import bisect
-from .tavtigian import get_tavtigian_c
+from .tavtigianutils import get_tavtigian_c
 from multiprocessing.pool import Pool
 from LocalCalibration.LocalCalibration import LocalCalibration
 
