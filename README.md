@@ -1,7 +1,7 @@
 This is a python version of [clingen-svi-comp_calibration](https://github.com/vpejaver/clingen-svi-comp_calibration)
 
 We have tested this tool with python 3.6 and python 3.8.
-The tool relies on numpy and matplotlib and should work with recently fair version of these libraries.
+The tool relies on numpy, scipy and matplotlib and should work with fairly recent version of these libraries.
 
 To run the code:
 ```
