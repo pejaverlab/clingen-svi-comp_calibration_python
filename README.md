@@ -7,9 +7,9 @@ To run the code:
 ```
 python main.py --configfile config.ini --tool="$TOOL_NAME" --labelled_data_file "$PATH_TO_LABELLED_DATA_FILE" --unlabelled_data_file "$PATH_TO_UNBALELLED_DATA_FILE" --outdir=<$PATH_TO_RESULT_DIR>
 ```
-The labelled_data_file should be a two column file where first column is the score and second column is the label (0 for benign and 1 for pathogenic).
+The labelled_data_file should be a two column tab separated file where first column is the score and second column is the label (0 for benign and 1 for pathogenic).
 
-The unlabelled_data_file should can be a single or double column file where first column stores the scores.
+The unlabelled_data_file should can be a single or double column tab separated file where first column stores the scores.
 
 The scores by default are assumed to be positively correlated with pathogenicity. If the scores are negatively correlated with pathogenicity, add "--reverse" to the passed argument like:
 ```
