@@ -12,6 +12,7 @@ from multiprocessing.pool import Pool
 from LocalCalibration.LocalCalibration import LocalCalibration
 from Tavtigian.Tavtigian import LocalCalibrateThresholdComputation
 import time
+import matplotlib.pyplot as plt
 
 
 def load_labelled_data(filepath):
@@ -104,7 +105,10 @@ def getParser():
     return parser
 
 
-
+scoretolabel = {8:"Very Strong Pathogenic", 4:"Strong Pathogenic", 3:"Three Pathogenic", 2:"Moderate Pathogenic",
+                1:"Supporting Pathogenic",
+                -8:"Very Strong Benign", -4:"Strong Benign", -3:"Three Benign", -2:"Moderate Benign",
+                -1:"Supporting Benign", 0:"no evidence"}
 def infer_single(score, pthreshdiscounted, bthreshdiscounted):
     if(not np.isnan(pthreshdiscounted[0]) and score > pthreshdiscounted[0]):
         return 8
@@ -130,9 +134,18 @@ def infer_single(score, pthreshdiscounted, bthreshdiscounted):
         return 0
 
 
+def readDiscoutedThresholdFile(filename):
+    thresholds95 = []
+    ftext = open(filename, "r").read().split("\n")
+    print(ftext)
+    thresholds95 = [float(e.split('\t')[1]) for e in ftext]
+    return thresholds95
+    
+        
+    
 def infer(scores, calibrated_data_directory):
-    pthreshdiscounted = np.loadtxt(os.path.join(calibrated_data_directory,"pthreshdiscounted.txt"))
-    bthreshdiscounted = np.loadtxt(os.path.join(calibrated_data_directory,"bthreshdiscounted.txt"))
+    pthreshdiscounted = readDiscoutedThresholdFile(os.path.join(calibrated_data_directory,"pthreshdiscounted.txt"))
+    bthreshdiscounted = readDiscoutedThresholdFile(os.path.join(calibrated_data_directory,"bthreshdiscounted.txt"))
     return [infer_single(e,pthreshdiscounted, bthreshdiscounted) for e in scores]
 
 
@@ -145,10 +158,19 @@ def storeResults(outdir, thresholds, posteriors_p, posteriors_b, all_pathogenic,
     tosave = np.array([np.flip(thresholds),posteriors_b]).T
     np.savetxt(fname,tosave , delimiter='\t', fmt='%f', header="score\tposterior")
 
-    import matplotlib.pyplot as plt
+    benign95= [np.percentile(e,5) for e in all_benign]
+    pathogenic95 = [np.percentile(e,5) for e in all_pathogenic]
+
+    fname = os.path.join(outdir, "pathogenic95_posterior.txt")
+    tosave = np.array([thresholds,pathogenic95]).T
+    np.savetxt(fname,tosave , delimiter='\t', fmt='%f', header="score\tposterior")
+    fname = os.path.join(outdir,"benign95_posterior.txt")
+    tosave = np.array([np.flip(thresholds),benign95]).T
+    np.savetxt(fname,tosave , delimiter='\t', fmt='%f', header="score\tposterior")
+    
+
     fig, ax = plt.subplots()
     ax.plot(np.flip(thresholds),posteriors_b , linewidth=2.0)
-    benign95= [np.percentile(e,5) for e in all_benign]
     ax.plot(np.flip(thresholds),benign95, color='gray', label = "One-sided confidence bound")
     ax.set_xlabel("score")
     ax.set_ylabel("posterior")
@@ -164,7 +186,6 @@ def storeResults(outdir, thresholds, posteriors_p, posteriors_b, all_pathogenic,
     ax.clear()
 
     ax.plot(thresholds,posteriors_p , linewidth=2.0, color='b')
-    pathogenic95 = [np.percentile(e,5) for e in all_pathogenic]
     ax.plot(thresholds,pathogenic95, color='gray', label = "One-sided confidence bound")
     ax.set_xlabel("score")
     ax.set_ylabel("posterior")
@@ -183,10 +204,18 @@ def storeResults(outdir, thresholds, posteriors_p, posteriors_b, all_pathogenic,
     np.savetxt(fname, bthresh , delimiter='\t', fmt='%f')
 
     fname = os.path.join(outdir,"pthreshdiscounted.txt")
-    stringtosave = "Supporting"
-    np.savetxt(fname, DiscountedThresholdP , delimiter='\t', fmt='%f')
+    stringtosave = "VeryStrong(+8)\t{:.6f}\nStrong(+4)\t{:.6f}\nThree(+3)\t{:.6f}\nModerate(+2)\t{:.6f}\nSupporting(+1)\t{:.6f}"
+    stringtosave = stringtosave.format(DiscountedThresholdP[0],DiscountedThresholdP[1],DiscountedThresholdP[2],DiscountedThresholdP[3],DiscountedThresholdP[4])
+    f = open(fname, 'w')
+    f.write(stringtosave)
+    f.close
+
     fname = os.path.join(outdir,"bthreshdiscounted.txt")
-    np.savetxt(fname, DiscountedThresholdB , delimiter='\t', fmt='%f')
+    stringtosave = "VeryStrong(-8)\t{:.6f}\nStrong(-4)\t{:.6f}\nThree(-3)\t{:.6f}\nModerate(-2)\t{:.6f}\nSupporting(-1)\t{:.6f}"
+    stringtosave = stringtosave.format(DiscountedThresholdB[0],DiscountedThresholdB[1],DiscountedThresholdB[2],DiscountedThresholdB[3],DiscountedThresholdB[4])
+    f = open(fname, 'w')
+    f.write(stringtosave)
+    f.close
 
 
     
@@ -275,7 +304,7 @@ def main():
     if(args.command=="infer"):
         if (args.score):
             ans = infer([args.score], args.calibrated_data_directory)
-            print(ans[0])
+            print(ans[0],":",scoretolabel[ans[0]])
         elif (args.score_file):
             scores = np.loadtxt(args.score_file)
             ans = infer(scores, args.calibrated_data_directory)
