@@ -12,10 +12,9 @@ from multiprocessing.pool import Pool
 
 class LocalCalibration:
 
-    def __init__(self, alpha,c, reverse = None, windowclinvarpoints = 100,
+    def __init__(self, alpha, reverse = None, windowclinvarpoints = 100,
                  windowgnomadfraction = 0.03, gaussian_smoothing = False, pu_smoothing=False):
         self.alpha = alpha
-        self.c = c
         self.reverse = reverse
         self.windowclinvarpoints = windowclinvarpoints
         self.windowgnomadfraction = windowgnomadfraction

@@ -137,7 +137,6 @@ def infer_single(score, pthreshdiscounted, bthreshdiscounted):
 def readDiscoutedThresholdFile(filename):
     thresholds95 = []
     ftext = open(filename, "r").read().split("\n")
-    print(ftext)
     thresholds95 = [float(e.split('\t')[1]) for e in ftext]
     return thresholds95
     
@@ -261,7 +260,7 @@ def calibrate(args):
     g = np.sort(np.array(g))
     xg = np.concatenate((x,g))
 
-    calib = LocalCalibration(alpha, c, reverse, windowclinvarpoints, windowgnomadfraction, gaussian_smoothing, data_smoothing)
+    calib = LocalCalibration(alpha, reverse, windowclinvarpoints, windowgnomadfraction, gaussian_smoothing, data_smoothing)
     thresholds, posteriors_p = calib.fit(x,y,g,alpha)
     posteriors_b = 1 - np.flip(posteriors_p)
     
