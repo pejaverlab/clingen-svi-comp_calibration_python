@@ -15,6 +15,12 @@ import time
 import matplotlib.pyplot as plt
 
 
+scoretolabel = {8:"Very Strong Pathogenic", 4:"Strong Pathogenic", 3:"Three Pathogenic", 2:"Moderate Pathogenic",
+                1:"Supporting Pathogenic",
+                -8:"Very Strong Benign", -4:"Strong Benign", -3:"Three Benign", -2:"Moderate Benign",
+                -1:"Supporting Benign", 0:"no evidence"}
+
+
 def load_labelled_data(filepath):
     data = None
     with open(filepath, "r") as f:
@@ -105,10 +111,6 @@ def getParser():
     return parser
 
 
-scoretolabel = {8:"Very Strong Pathogenic", 4:"Strong Pathogenic", 3:"Three Pathogenic", 2:"Moderate Pathogenic",
-                1:"Supporting Pathogenic",
-                -8:"Very Strong Benign", -4:"Strong Benign", -3:"Three Benign", -2:"Moderate Benign",
-                -1:"Supporting Benign", 0:"no evidence"}
 def infer_single(score, pthreshdiscounted, bthreshdiscounted):
     if(not np.isnan(pthreshdiscounted[0]) and score > pthreshdiscounted[0]):
         return 8
