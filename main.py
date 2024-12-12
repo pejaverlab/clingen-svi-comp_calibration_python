@@ -1,5 +1,4 @@
 import csv
-import argparse
 import os
 import numpy as np
 import math
@@ -13,7 +12,8 @@ from LocalCalibration.LocalCalibration import LocalCalibration
 from Tavtigian.Tavtigian import LocalCalibrateThresholdComputation
 import time
 import matplotlib.pyplot as plt
-
+from utils import *
+from infer import *
 
 scoretolabel = {8:"Very Strong Pathogenic", 4:"Strong Pathogenic", 3:"Three Pathogenic", 2:"Moderate Pathogenic",
                 1:"Supporting Pathogenic",
@@ -21,133 +21,8 @@ scoretolabel = {8:"Very Strong Pathogenic", 4:"Strong Pathogenic", 3:"Three Path
                 -1:"Supporting Benign", 0:"no evidence"}
 
 
-def load_labelled_data(filepath):
-    data = None
-    with open(filepath, "r") as f:
-        reader = csv.reader(f, delimiter='\t')
-        data = list(reader)
-        f.close()
-    x = [float(e[0]) for e in data]
-    y = [int(e[1]) for e in data]
-    return x,y
-
-def load_unlabelled_data(filepath):
-    data = None
-    with open(filepath, "r") as f:
-        reader = csv.reader(f, delimiter='\t')
-        data = list(reader)
-        f.close()
-    g = [float(e[0]) for e in data]
-    return g
 
 
-def getParser():
-    parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(dest="command")
-
-    parser.add_argument(
-        "infer",
-        action='store_true',
-    )
-    parser.add_argument(
-        "calibrate",
-        action='store_true',
-    )
-
-    parser_calibrate = subparsers.add_parser('calibrate')
-    parser_infer = subparsers.add_parser('infer')
-
-    parser_calibrate.add_argument(
-        "--configfile",
-        default=None,
-        type=str,
-        required=True,
-    )
-
-    parser_calibrate.add_argument(
-        "--outdir",
-        default="out",
-        type=str,
-        required=True,
-    )
-    parser_calibrate.add_argument(
-        "--labelled_data_file",
-        default=None,
-        type=str,
-        required=True,
-    )
-    parser_calibrate.add_argument(
-        "--unlabelled_data_file",
-        default=None,
-        type=str,
-        required=False,
-    )
-    parser_calibrate.add_argument(
-        "--reverse",
-        action='store_true',
-    )
-
-    parser_infer.add_argument(
-        "--score",
-        default=None,
-        type = float,
-        required=False,
-    )
-
-    parser_infer.add_argument(
-        "--score_file",
-        default=None,
-        type=str,
-        required=False,
-    )
-
-    parser_infer.add_argument(
-        "--calibrated_data_directory",
-        default=None,
-        type=str,
-        required=False
-    )
-    
-    return parser
-
-
-def infer_single(score, pthreshdiscounted, bthreshdiscounted):
-    if(not np.isnan(pthreshdiscounted[0]) and score > pthreshdiscounted[0]):
-        return 8
-    if(not np.isnan(pthreshdiscounted[1]) and score > pthreshdiscounted[1]):
-        return 4
-    if(not np.isnan(pthreshdiscounted[2]) and score > pthreshdiscounted[2]):
-        return 3
-    if(not np.isnan(pthreshdiscounted[3]) and score > pthreshdiscounted[3]):
-        return 2
-    if(not np.isnan(pthreshdiscounted[4]) and score > pthreshdiscounted[4]):
-        return 1
-    if(not np.isnan(bthreshdiscounted[0]) and score < bthreshdiscounted[0]):
-        return -8
-    if(not np.isnan(bthreshdiscounted[1]) and score < bthreshdiscounted[1]):
-        return -4
-    if(not np.isnan(bthreshdiscounted[2]) and score < bthreshdiscounted[2]):
-        return -3
-    if(not np.isnan(bthreshdiscounted[3]) and score < bthreshdiscounted[3]):
-        return -2
-    if(not np.isnan(bthreshdiscounted[4]) and score < bthreshdiscounted[4]):
-        return -1
-    else:
-        return 0
-
-
-def readDiscoutedThresholdFile(filename):
-    thresholds95 = []
-    ftext = open(filename, "r").read().split("\n")
-    thresholds95 = [float(e.split('\t')[1]) for e in ftext]
-    return thresholds95
-    
-        
-    
-def infer(scores, calibrated_data_directory):
-    pthreshdiscounted = readDiscoutedThresholdFile(os.path.join(calibrated_data_directory,"pthreshdiscounted.txt"))
-    bthreshdiscounted = readDiscoutedThresholdFile(os.path.join(calibrated_data_directory,"bthreshdiscounted.txt"))
-    return [infer_single(e,pthreshdiscounted, bthreshdiscounted) for e in scores]
 
 
 def storeResults(outdir, thresholds, posteriors_p, posteriors_b, all_pathogenic, all_benign, pthresh, bthresh, DiscountedThresholdP, DiscountedThresholdB, Post_p, Post_b):
@@ -257,8 +132,6 @@ def calibrate(args):
     x,y = load_labelled_data(labeldatafile)
     g = load_unlabelled_data(udatafile)
 
-    x = np.array(x)
-    y = np.array(y)
     g = np.sort(np.array(g))
     xg = np.concatenate((x,g))
 
@@ -276,9 +149,6 @@ def calibrate(args):
 
     Post_p, Post_b = get_tavtigian_thresholds(c, alpha)
 
-    print("Post P and B")
-    print(Post_p)
-    print(Post_b)
 
     all_pathogenic = np.row_stack((posteriors_p, posteriors_p_bootstrap))
     all_benign = 1 - np.flip(all_pathogenic, axis = 1)
@@ -291,7 +161,6 @@ def calibrate(args):
 
     storeResults(outdir, thresholds, posteriors_p, posteriors_b, all_pathogenic[1:].T, all_benign[1:].T, pthresh, bthresh, DiscountedThresholdP, DiscountedThresholdB, Post_p, Post_b)
     
-    print("Thresholds: ", pthresh)
     print("Discounted Thresholds: ", DiscountedThresholdP)
 
 
