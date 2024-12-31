@@ -20,9 +20,32 @@ scoretolabel = {8:"Very Strong Pathogenic", 4:"Strong Pathogenic", 3:"Three Path
                 -8:"Very Strong Benign", -4:"Strong Benign", -3:"Three Benign", -2:"Moderate Benign",
                 -1:"Supporting Benign", 0:"no evidence"}
 
+pthreshdiscountedvalues = {"BayesDel-noAF":   [np.nan, 0.500, 0.410, 0.270, 0.130],
+                           "MutPred2.0":      [np.nan, 0.932, 0.895, 0.829, 0.737],
+                           "REVEL":   [np.nan, 0.932,   0.879, 0.773, 0.644],
+                           "VEST4":   [np.nan, 0.965, 0.909, 0.861, 0.764],
+                           "AlphaMissense":   [np.nan, 0.990, 0.973, 0.906, 0.792],
+                           "ESM1b":   [np.nan, -24.000, -14.028, -12.253, -10.651],
+                           "VARITY-R":        [np.nan, 0.965, 0.915, 0.842, 0.675]
+                           }
 
+bthreshdiscountedvalues = {"BayesDel-noAF":   [np.nan, np.nan, -0.520,  -0.360,  -0.180],
+                           "MutPred2.0":      [np.nan, 0.010, 0.031, 0.197, 0.391],
+                           "REVEL":   [0.003, 0.016, 0.052, 0.183, 0.290],
+                           "VEST4":   [np.nan, np.nan, 0.077, 0.302, 0.449],
+                           "AlphaMissense":   [np.nan, np.nan, 0.070, 0.099, 0.169],
+                           "ESM1b":   [np.nan, np.nan,  8.841,   -3.098,  -6.268],
+                           "VARITY-R": [np.nan, 0.036, 0.063, 0.116, 0.251]
+                           }
 
-
+tool_direction_reverse = {"BayesDel-noAF": False,
+                          "MutPred2.0": False,
+                          "REVEL": False,
+                          "VEST4": False,
+                          "AlphaMissense": False,
+                          "ESM1b": True,
+                          "VARITY-R": False
+                          }
 
 
 def storeResults(outdir, thresholds, posteriors_p, posteriors_b, all_pathogenic, all_benign, pthresh, bthresh, DiscountedThresholdP, DiscountedThresholdB, Post_p, Post_b):
@@ -164,6 +187,30 @@ def calibrate(args):
     print("Discounted Thresholds: ", DiscountedThresholdP)
 
 
+def infer(args):
+    
+    if(args.calibrated_data_directory is not None):
+        pthreshdiscounted = readDiscoutedThresholdFile(os.path.join(args.calibrated_data_directory,"pthreshdiscounted.txt"))
+        bthreshdiscounted = readDiscoutedThresholdFile(os.path.join(args.calibrated_data_directory,"bthreshdiscounted.txt"))
+        reverse = args.reverse
+    elif(args.tool_name):
+        print("Prior 4.41%") 
+        pthreshdiscounted = pthreshdiscountedvalues[args.tool_name]
+        bthreshdiscounted = bthreshdiscountedvalues[args.tool_name]
+        reverse = tool_direction_reverse[args.tool_name]
+        
+    if (args.score):
+        ans = infer_evidence([args.score], pthreshdiscounted, bthreshdiscounted, reverse)
+        print(ans[0],":",scoretolabel[ans[0]])
+    elif (args.score_file):
+        scores = np.loadtxt(args.score_file)
+        ans = infer_evidence(scores, pthreshdiscounted, bthreshdiscounted, reverse)
+        with open("infer_out.txt", "w") as f:
+            for i in range(len(scores)):
+                f.write(str(scores[i]) + "\t" + str(ans[i]) + "\t" + scoretolabel[ans[i]] + "\n")
+        f.close()
+        print("Evidence stored in infer_out.txt")
+        
     
 def main():
 
@@ -171,18 +218,14 @@ def main():
     parser = getParser()
     args = parser.parse_args()
     
-    if(args.command=="infer"):
-        if (args.score):
-            ans = infer([args.score], args.calibrated_data_directory)
-            print(ans[0],":",scoretolabel[ans[0]])
-        elif (args.score_file):
-            scores = np.loadtxt(args.score_file)
-            ans = infer(scores, args.calibrated_data_directory)
-            print(ans)
-        return
-
     if(args.command == "calibrate"):
         calibrate(args)
+
+    if(args.command=="infer"):
+        infer(args)
+        
+    return
+
 
         
 if __name__ == '__main__':

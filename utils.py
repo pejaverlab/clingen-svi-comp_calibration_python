@@ -90,4 +90,15 @@ def getParser():
         required=False
     )
     
+    parser_infer.add_argument(
+        "--tool_name",
+        default=None,
+        type=str,
+        required=False
+    )
+
+    parser_infer.add_argument(
+        "--reverse",
+        action='store_true',
+    )
     return parser
