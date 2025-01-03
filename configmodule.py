@@ -1,5 +1,5 @@
 import configparser
-
+import os
 
 
 class ConfigModule:
@@ -14,12 +14,14 @@ class ConfigModule:
         self.emulate_pejaver = None
         self.gaussian_smoothing = None
         self.data_smoothing = None
+        self.cfg = None
 
     def load_config(self, filepath):
 
         cfg = configparser.ConfigParser()
         cfg.read(filepath)
         cfg.sections()
+        self.cfg = cfg
         
         self.B = int(cfg['tuningparameters']['B'])
         self.discountonesided = float(cfg['tuningparameters']['discountonesided'])
@@ -40,3 +42,7 @@ class ConfigModule:
             assert self.windowgnomadfraction is not None
         self.gaussian_smoothing = cfg['smoothing'].getboolean('gaussian_smoothing')
 
+
+    def save_config(self, outdir):
+        with open(os.path.join(outdir, "config.ini"), 'w') as configfile:    # save
+            self.cfg.write(configfile)

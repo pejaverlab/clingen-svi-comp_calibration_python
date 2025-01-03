@@ -14,11 +14,13 @@ import time
 import matplotlib.pyplot as plt
 from utils import *
 from infer import *
+import datetime
+import json
 
-scoretolabel = {8:"Very Strong Pathogenic", 4:"Strong Pathogenic", 3:"Three Pathogenic", 2:"Moderate Pathogenic",
-                1:"Supporting Pathogenic",
-                -8:"Very Strong Benign", -4:"Strong Benign", -3:"Three Benign", -2:"Moderate Benign",
-                -1:"Supporting Benign", 0:"no evidence"}
+scoretolabel = {8:"PP3_VeryStrong", 4:"PP3_Strong", 3:"PP3_+3", 2:"PP3_Moderate",
+                1:"PP3_Supporting",
+                -8:"BP4_VeryStrong", -4:"BP4_Strong", -3:"BP4_-3", -2:"BP4_Moderate",
+                -1:"BP4_Supporting", 0:"Indeterminate"}
 
 pthreshdiscountedvalues = {"BayesDel-noAF":   [np.nan, 0.500, 0.410, 0.270, 0.130],
                            "MutPred2.0":      [np.nan, 0.932, 0.895, 0.829, 0.737],
@@ -116,7 +118,6 @@ def storeResults(outdir, thresholds, posteriors_p, posteriors_b, all_pathogenic,
     f.write(stringtosave)
     f.close
 
-
     
 def calibrate(args):
         
@@ -172,7 +173,6 @@ def calibrate(args):
 
     Post_p, Post_b = get_tavtigian_thresholds(c, alpha)
 
-
     all_pathogenic = np.row_stack((posteriors_p, posteriors_p_bootstrap))
     all_benign = 1 - np.flip(all_pathogenic, axis = 1)
 
@@ -186,6 +186,8 @@ def calibrate(args):
     
     print("Discounted Thresholds: ", DiscountedThresholdP)
 
+    configmodule.save_config(outdir)
+
 
 def infer(args):
     
@@ -194,7 +196,7 @@ def infer(args):
         bthreshdiscounted = readDiscoutedThresholdFile(os.path.join(args.calibrated_data_directory,"bthreshdiscounted.txt"))
         reverse = args.reverse
     elif(args.tool_name):
-        print("Prior 4.41%") 
+        print("Prior 4.41%")
         pthreshdiscounted = pthreshdiscountedvalues[args.tool_name]
         bthreshdiscounted = bthreshdiscountedvalues[args.tool_name]
         reverse = tool_direction_reverse[args.tool_name]
@@ -206,6 +208,13 @@ def infer(args):
         scores = np.loadtxt(args.score_file)
         ans = infer_evidence(scores, pthreshdiscounted, bthreshdiscounted, reverse)
         with open("infer_out.txt", "w") as f:
+            f.write(datetime.datetime.now().strftime("#%I:%M%p on %B %d, %Y\n"))
+            if(args.tool_name):
+                f.write("#Method: " + args.tool_name + "\n")
+                f.write("#Prior:  4.41%\n")
+            elif(args.calibrated_data_directory):
+                f.write("#Calibration Scores Obtained From: " + args.calibrated_data_directory + "\n")
+            f.write("#PP3: Pathogenic\n#BP4: Benign\n")
             for i in range(len(scores)):
                 f.write(str(scores[i]) + "\t" + str(ans[i]) + "\t" + scoretolabel[ans[i]] + "\n")
         f.close()
