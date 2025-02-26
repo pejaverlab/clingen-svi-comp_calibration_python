@@ -4,7 +4,7 @@ import numpy as np
 import math
 import time
 import bisect
-from Tavtigian.tavtigianutils import get_tavtigian_c, get_tavtigian_thresholds
+from Tavtigian.tavtigianutils import get_tavtigian_c, get_tavtigian_thresholds, get_tavtigian_plr
 from configmodule import ConfigModule
 from LocalCalibration.gaussiansmoothing import *
 from multiprocessing.pool import Pool
@@ -20,7 +20,7 @@ import json
 scoretolabel = {8:"PP3_VeryStrong", 4:"PP3_Strong", 3:"PP3_+3", 2:"PP3_Moderate",
                 1:"PP3_Supporting",
                 -8:"BP4_VeryStrong", -4:"BP4_Strong", -3:"BP4_-3", -2:"BP4_Moderate",
-                -1:"BP4_Supporting", 0:"Indeterminate"}
+                -1:"BP4_Supporting", 0:"Variant of Uncertain Significance"}
 
 pthreshdiscountedvalues = {"BayesDel-noAF":   [np.nan, 0.500, 0.410, 0.270, 0.130],
                            "MutPred2.0":      [np.nan, 0.932, 0.895, 0.829, 0.737],
@@ -50,7 +50,7 @@ tool_direction_reverse = {"BayesDel-noAF": False,
                           }
 
 
-def storeResults(outdir, thresholds, posteriors_p, posteriors_b, all_pathogenic, all_benign, pthresh, bthresh, DiscountedThresholdP, DiscountedThresholdB, Post_p, Post_b):
+def storeResults(outdir, thresholds, posteriors_p, posteriors_b, all_pathogenic, all_benign, pthresh, bthresh, DiscountedThresholdP, DiscountedThresholdB, Post_p, Post_b, plr):
 
     fname = os.path.join(outdir, "pathogenic_posterior.txt")
     tosave = np.array([thresholds,posteriors_p]).T
@@ -104,16 +104,20 @@ def storeResults(outdir, thresholds, posteriors_p, posteriors_b, all_pathogenic,
     fname = os.path.join(outdir,"bthresh.txt")
     np.savetxt(fname, bthresh , delimiter='\t', fmt='%f')
 
+    print("Discounted Thresholds Saving: ", DiscountedThresholdP)
+    print(plr)
     fname = os.path.join(outdir,"pthreshdiscounted.txt")
-    stringtosave = "VeryStrong(+8)\t{:.6f}\nStrong(+4)\t{:.6f}\nThree(+3)\t{:.6f}\nModerate(+2)\t{:.6f}\nSupporting(+1)\t{:.6f}"
-    stringtosave = stringtosave.format(DiscountedThresholdP[0],DiscountedThresholdP[1],DiscountedThresholdP[2],DiscountedThresholdP[3],DiscountedThresholdP[4])
+    stringtosave = "AMCG\tScoreThreshold\tOddsOfPathogenicity\n"
+    stringtosave += "VeryStrong(+8)\t{:.6f}\t{}\nStrong(+4)\t{:.6f}\t{}\nThree(+3)\t{:.6f}\t{}\nModerate(+2)\t{:.6f}\t{}\nSupporting(+1)\t{:.6f}\t{}"
+    stringtosave = stringtosave.format(DiscountedThresholdP[0],plr[0],DiscountedThresholdP[1],plr[1],DiscountedThresholdP[2],plr[2],DiscountedThresholdP[3],plr[3],DiscountedThresholdP[4],plr[4])
     f = open(fname, 'w')
     f.write(stringtosave)
     f.close
 
     fname = os.path.join(outdir,"bthreshdiscounted.txt")
-    stringtosave = "VeryStrong(-8)\t{:.6f}\nStrong(-4)\t{:.6f}\nThree(-3)\t{:.6f}\nModerate(-2)\t{:.6f}\nSupporting(-1)\t{:.6f}"
-    stringtosave = stringtosave.format(DiscountedThresholdB[0],DiscountedThresholdB[1],DiscountedThresholdB[2],DiscountedThresholdB[3],DiscountedThresholdB[4])
+    stringtosave = "AMCG\tScoreThreshold\tOddsOfBenignity\n"
+    stringtosave += "VeryStrong(-8)\t{:.6f}\t{}\nStrong(-4)\t{:.6f}\t{}\nThree(-3)\t{:.6f}\t{}\nModerate(-2)\t{:.6f}\t{}\nSupporting(-1)\t{:.6f}\t{}"
+    stringtosave = stringtosave.format(DiscountedThresholdB[0],plr[0],DiscountedThresholdB[1],plr[1],DiscountedThresholdB[2],plr[2],DiscountedThresholdB[3],plr[3],DiscountedThresholdB[4],plr[4])
     f = open(fname, 'w')
     f.write(stringtosave)
     f.close
@@ -163,13 +167,11 @@ def calibrate(args):
     thresholds, posteriors_p = calib.fit(x,y,g,alpha)
     posteriors_b = 1 - np.flip(posteriors_p)
     
-
     calib = LocalCalibrateThresholdComputation(alpha, c, reverse, windowclinvarpoints, windowgnomadfraction, gaussian_smoothing, data_smoothing)
     start = time.time()
     _, posteriors_p_bootstrap = calib.get_both_bootstrapped_posteriors_parallel(x,y, g, B, alpha, thresholds)
     end = time.time()
     print("time: " ,end - start)
-
 
     Post_p, Post_b = get_tavtigian_thresholds(c, alpha)
 
@@ -182,7 +184,9 @@ def calibrate(args):
     DiscountedThresholdP = LocalCalibrateThresholdComputation.get_discounted_thresholds(pthresh, Post_p, B, discountonesided, 'pathogenic')
     DiscountedThresholdB = LocalCalibrateThresholdComputation.get_discounted_thresholds(bthresh, Post_b, B, discountonesided, 'benign')
 
-    storeResults(outdir, thresholds, posteriors_p, posteriors_b, all_pathogenic[1:].T, all_benign[1:].T, pthresh, bthresh, DiscountedThresholdP, DiscountedThresholdB, Post_p, Post_b)
+    plr = get_tavtigian_plr(c)
+
+    storeResults(outdir, thresholds, posteriors_p, posteriors_b, all_pathogenic[1:].T, all_benign[1:].T, pthresh, bthresh, DiscountedThresholdP, DiscountedThresholdB, Post_p, Post_b, plr)
     
     print("Discounted Thresholds: ", DiscountedThresholdP)
 
@@ -192,18 +196,25 @@ def calibrate(args):
 def infer(args):
     
     if(args.calibrated_data_directory is not None):
-        pthreshdiscounted = readDiscoutedThresholdFile(os.path.join(args.calibrated_data_directory,"pthreshdiscounted.txt"))
-        bthreshdiscounted = readDiscoutedThresholdFile(os.path.join(args.calibrated_data_directory,"bthreshdiscounted.txt"))
+        pthreshdiscounted, pplr = readDiscoutedThresholdFile(os.path.join(args.calibrated_data_directory,"pthreshdiscounted.txt"))
+        bthreshdiscounted, bplr = readDiscoutedThresholdFile(os.path.join(args.calibrated_data_directory,"bthreshdiscounted.txt"))
         reverse = args.reverse
     elif(args.tool_name):
         print("Prior 4.41%")
         pthreshdiscounted = pthreshdiscountedvalues[args.tool_name]
         bthreshdiscounted = bthreshdiscountedvalues[args.tool_name]
+        pplr = [1124,33,13,5,2]
+        bplr = [1124,33,13,5,2]
         reverse = tool_direction_reverse[args.tool_name]
-        
+
+    
     if (args.score):
         ans = infer_evidence([args.score], pthreshdiscounted, bthreshdiscounted, reverse)
-        print(ans[0],":",scoretolabel[ans[0]])
+        print(datetime.datetime.now().strftime("#%I:%M%p on %B %d, %Y\n"))
+        print("Odds of Pathogenicity/Benignity\n"+ "Very Strong(8): " + str(pplr[0]) + "\nPLR Strong(4): " + str(pplr[1]) +
+              "\nPLR +3(3): " + str(pplr[2])+
+              "\nPLR Moderate(2): " + str(pplr[3]) + "\nPLR Supporting(1): " + str(pplr[4]) + "\n"  )
+        print("Score:\t" + str(args.score) + "\nACMG20:\t" + str(ans[0]) + "\nACMG18: " +  scoretolabel[ans[0]] + "\n")
     elif (args.score_file):
         scores = np.loadtxt(args.score_file)
         ans = infer_evidence(scores, pthreshdiscounted, bthreshdiscounted, reverse)
@@ -215,6 +226,10 @@ def infer(args):
             elif(args.calibrated_data_directory):
                 f.write("#Calibration Scores Obtained From: " + args.calibrated_data_directory + "\n")
             f.write("#PP3: Pathogenic\n#BP4: Benign\n")
+            f.write("\nOdds of Pathogenicity/Benignity\n")
+            f.write("PLR Very Strong(8): " + str(pplr[0]) + "\nPLR Strong(4): " + str(pplr[1]) + "\nPLR +3(3): " + str(pplr[2])+
+                    "\nPLR Moderate(2): " + str(pplr[3]) + "\nPLR Supporting(1): " + str(pplr[4]) + "\n\n"  )
+            f.write("Score\tACMG20\tACMG18\n")
             for i in range(len(scores)):
                 f.write(str(scores[i]) + "\t" + str(ans[i]) + "\t" + scoretolabel[ans[i]] + "\n")
         f.close()

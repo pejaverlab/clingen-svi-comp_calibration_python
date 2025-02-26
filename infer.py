@@ -52,9 +52,14 @@ def infer_single_reverse(score, pthreshdiscounted, bthreshdiscounted):
 
 def readDiscoutedThresholdFile(filename):
     thresholds95 = []
-    ftext = open(filename, "r").read().split("\n")
-    thresholds95 = [float(e.split('\t')[1]) for e in ftext]
-    return thresholds95
+    plr95 = []
+    ftext = open(filename, "r").read().split("\n")[1:]
+    for l in ftext:
+        v = l.split('\t')
+        thresholds95.append(float(v[1]))
+        plr95.append(int(v[2]))
+        #thresholds95 = [float(e.split('\t')[1]) for e in ftext]
+    return thresholds95, plr95
     
         
     
