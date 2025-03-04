@@ -3,7 +3,16 @@ This is a python version of [clingen-svi-comp_calibration](https://github.com/vp
 We have tested this tool with python 3.6 and python 3.8.
 The tool relies on numpy, scipy and matplotlib and should work with fairly recent version of these libraries.
 
-To run the code:
+
+The tool offers two modes:
+
+1. Calibrate
+2. Infer
+
+
+## Calibrate
+
+To run the tool in Calibrate mode:
 ```
 python main.py --configfile config.ini --labelled_data_file "$PATH_TO_LABELLED_DATA_FILE" --unlabelled_data_file "$PATH_TO_UNBALELLED_DATA_FILE" --outdir "$PATH_TO_RESULT_DIR"
 ```
@@ -93,11 +102,32 @@ In case you wish to use our implementation of  Local Calibration method in your 
 
 ```
 
-You can run the example as modules:
 
+
+## Infer
+
+The 'infer' functionality is to get the pathogenicity classification of a variant.
+
+To run infer, there are two options:
+
+1. Calibration as per Pejaver et al.
+
+In this case, we provide the score/score file and the tool name :
 ```
-python -m examples.example1 --configfile config.ini --tool="$TOOL_NAME" --labelled_data_file "$PATH_TO_LABELLED_DATA_FILE" --unlabelled_data_file "$PATH_TO_UNBALELLED_DATA_FILE" --outdir=<$PATH_TO_RESULT_DIR>
-python -m examples.example2 --configfile config.ini --tool="$TOOL_NAME" --labelled_data_file "$PATH_TO_LABELLED_DATA_FILE" --unlabelled_data_file "$PATH_TO_UNBALELLED_DATA_FILE" --outdir=<$PATH_TO_RESULT_DIR>
-python -m examples.example3 --configfile config.ini --tool="$TOOL_NAME" --labelled_data_file "$PATH_TO_LABELLED_DATA_FILE" --unlabelled_data_file "$PATH_TO_UNBALELLED_DATA_FILE" --outdir=<$PATH_TO_RESULT_DIR>
+python main.py infer --score "$SCORE" --tool_name BayesDel-noAF
+```
+or provide the score file, which just contains list of scores
+```
+python main.py infer --score_file "$PATH TO SCORE FILE"  --tool_name BayesDel-noAF
+```
+
+2. Use your own calbrated data directory generated from the "calibrate" option above:
+```
+python main.py infer --score "$SCORE" --calibrated_data_directory "$PATH TO CALIBRATED DATA DIRECTORY"
+```
+
+or provide the score file:
+```
+python main.py infer --score_file "$PATH TO SCORE FILE" --calibrated_data_directory "$PATH TO CALIBRATED DATA DIRECTORY"
 ```
 
