@@ -28,7 +28,7 @@ python main.py --configfile config.ini --labelled_data_file "$PATH_TO_LABELLED_D
 The results are stored in "$outdir" sub directory.
 
 
-## Tuning Parameters
+### Tuning Parameters
 
 Description of Tuning Parameters defined in config.ini are as follows:
 ```python
@@ -51,7 +51,7 @@ windowgnomadfraction = 0.03  # For the adaptive	windows for computing the local 
 ```
 
 
-## RESULTS
+### RESULTS
 
 In the provided output directory, you will have following files:
 1. $TOOL_NAME_benign.txt   - This is a two column file. The first column represents a score from the tool and second column represents the calibrated probability of being benign.
@@ -66,7 +66,7 @@ In the provided output directory, you will have following files:
 
 
 
-## Additional Comments
+### Additional Comments
 
 In case you wish to use our implementation of  Local Calibration method in your own tool, refer to following hints:
 
