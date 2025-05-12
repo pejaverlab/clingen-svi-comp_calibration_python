@@ -81,7 +81,7 @@ def storeResults(outdir, thresholds, posteriors_p, posteriors_b, all_pathogenic,
     ax.axhline(Post_b[2], linestyle='dashdot', color='steelblue', label = "BP4_Moderate+ : " + str(round(Post_b[2],4)) )
     ax.axhline(Post_b[1], linestyle=(5, (10, 3)), color='steelblue', label = "BP4_Strong : " + str(round(Post_b[1],4)) )
     ax.axhline(Post_b[0], linestyle='solid', color='steelblue', label = "BP4_VeryStrong: " + str(round(Post_b[0],4)) ) 
-    ax.set_ylim([0.975, 1.001])
+    ax.set_ylim([max(0,Post_b[4]-0.2*(Post_b[0]-Post_b[4])), 1.001])
     plt.legend(loc="lower left", fontsize="xx-small")
     plt.savefig(os.path.join(outdir,"benign.png"))
     ax.clear()
@@ -96,6 +96,7 @@ def storeResults(outdir, thresholds, posteriors_p, posteriors_b, all_pathogenic,
     ax.axhline(Post_p[2], linestyle='dashdot', color='r', label = "Moderate+ : " + str(round(Post_p[2],4)))
     ax.axhline(Post_p[1], linestyle=(5, (10, 3)), color='r', label = "PP3_Strong : " + str(round(Post_p[1],4)))
     ax.axhline(Post_p[0], linestyle='solid', color='r', label = "PP3_VeryStrong : " + str(round(Post_p[0],4)))
+    ax.set_ylim([max(0,Post_p[4]-0.2*(Post_p[0]-Post_p[4])), 1.001])
     plt.legend(loc="upper left", fontsize="xx-small")
     plt.savefig(os.path.join(outdir, "pathogenic.png"))
 
